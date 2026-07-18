@@ -1,430 +1,155 @@
 # ==========================================================
-# CUSTOMER CHURN PREDICTION
-# PART 1
-# Data Loading & Data Cleaning
-# ==========================================================
-
-# Import Libraries
-import pandas as pd
-import numpy as np
-
-# ----------------------------------------------------------
-# STEP 1 : Load Dataset
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("CUSTOMER CHURN PREDICTION PROJECT")
-print("=" * 60)
-
-try:
-    df = pd.read_csv("data/customer_churn.csv")
-    print("\nDataset Loaded Successfully.\n")
-except Exception as e:
-    print("Dataset Loading Failed")
-    print(e)
-    exit()
-
-# ----------------------------------------------------------
-# STEP 2 : Display First Rows
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("FIRST FIVE ROWS")
-print("=" * 60)
-
-print(df.head())
-
-# ----------------------------------------------------------
-# STEP 3 : Shape
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("DATASET SHAPE")
-print("=" * 60)
-
-rows, cols = df.shape
-
-print(f"Rows    : {rows}")
-print(f"Columns : {cols}")
-
-# ----------------------------------------------------------
-# STEP 4 : Column Names
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("COLUMN NAMES")
-print("=" * 60)
-
-for column in df.columns:
-    print(column)
-
-# ----------------------------------------------------------
-# STEP 5 : Dataset Information
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("DATASET INFORMATION")
-print("=" * 60)
-
-print(df.info())
-
-# ----------------------------------------------------------
-# STEP 6 : Statistical Summary
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("STATISTICAL SUMMARY")
-print("=" * 60)
-
-print(df.describe())
-
-# ----------------------------------------------------------
-# STEP 7 : Missing Values
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("MISSING VALUES")
-print("=" * 60)
-
-print(df.isnull().sum())
-
-# ----------------------------------------------------------
-# STEP 8 : Duplicate Records
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("DUPLICATE RECORDS")
-print("=" * 60)
-
-duplicates = df.duplicated().sum()
-
-print("Duplicate Rows :", duplicates)
-
-# ----------------------------------------------------------
-# STEP 9 : Remove Duplicates
-# ----------------------------------------------------------
-
-df = df.drop_duplicates()
-
-print("\nDuplicates Removed Successfully")
-
-print("Current Shape :", df.shape)
-
-# ----------------------------------------------------------
-# STEP 10 : Check Data Types
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("DATA TYPES")
-print("=" * 60)
-
-print(df.dtypes)
-
-# ----------------------------------------------------------
-# STEP 11 : Unique Values
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("UNIQUE VALUES")
-print("=" * 60)
-
-for col in df.columns:
-
-    print("\n-------------------------------------")
-    print(col)
-    print("-------------------------------------")
-
-    print(df[col].nunique())
-
-# ----------------------------------------------------------
-# STEP 12 : Target Variable
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("TARGET VARIABLE")
-print("=" * 60)
-
-print(df["Churn"].value_counts())
-
-# ----------------------------------------------------------
-# STEP 13 : Convert TotalCharges
-# ----------------------------------------------------------
-
-if "TotalCharges" in df.columns:
-
-    df["TotalCharges"] = pd.to_numeric(
-        df["TotalCharges"],
-        errors="coerce"
-    )
-
-# ----------------------------------------------------------
-# STEP 14 : Fill Missing Values
-# ----------------------------------------------------------
-
-df.fillna(df.median(numeric_only=True), inplace=True)
-
-# ----------------------------------------------------------
-# STEP 15 : Final Check
-# ----------------------------------------------------------
-
-print("=" * 60)
-print("FINAL DATASET")
-print("=" * 60)
-
-print(df.head())
-
-print()
-
-print(df.shape)
-
-# ----------------------------------------------------------
-# STEP 16 : Save Clean Dataset
-# ----------------------------------------------------------
-
-df.to_csv(
-    "data/customer_churn_clean.csv",
-    index=False
-)
-
-print("\nClean Dataset Saved Successfully.")
-
-print("\nPART 1 COMPLETED SUCCESSFULLY")
-
-# ==========================================================
-# PART 2
-# Exploratory Data Analysis (EDA)
+# CUSTOMER CHURN PREDICTION — OFFLINE TRAINING SCRIPT
+#
+# IMPORTANT: This script is NOT part of the deployed app.
+# Run it locally / once, BEFORE deploying app.py, to generate:
+#   - data/customer_churn_clean.csv
+#   - images/*.png              (EDA charts)
+#   - models/churn_model.pkl
+#   - models/scaler.pkl
+#   - models/metrics.json       (accuracy, precision, recall, f1)
+#   - models/feature_importance.csv
+#
+# app.py never imports or executes this file. Deployment should
+# only ever point at app.py. This script is wrapped in a
+# `if __name__ == "__main__":` guard so it can never fire by
+# accident if something imports it as a module.
+#
+#   Usage:  python train.py
 # ==========================================================
 
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
+import json
+import datetime
 
-# Create images folder if not exists
-os.makedirs("images", exist_ok=True)
+import pandas as pd
+import numpy as np
 
-# Better graph style
-plt.style.use("ggplot")
-sns.set_theme()
-
-print("=" * 60)
-print("CHURN DISTRIBUTION")
-print("=" * 60)
-
-print(df["Churn"].value_counts())
-
-plt.figure(figsize=(6,5))
-
-sns.countplot(
-    data=df,
-    x="Churn"
-)
-
-plt.title("Customer Churn Distribution")
-
-plt.savefig("images/churn_distribution.png")
-
-plt.close()
-
-plt.figure(figsize=(7,5))
-
-sns.countplot(
-    data=df,
-    x="gender",
-    hue="Churn"
-)
-
-plt.title("Gender vs Churn")
-
-plt.savefig("images/gender_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(7,5))
-
-sns.countplot(
-    data=df,
-    x="SeniorCitizen",
-    hue="Churn"
-)
-
-plt.title("Senior Citizen vs Churn")
-
-plt.savefig("images/senior_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(7,5))
-
-sns.countplot(
-    data=df,
-    x="Partner",
-    hue="Churn"
-)
-
-plt.title("Partner vs Churn")
-
-plt.savefig("images/partner_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(7,5))
-
-sns.countplot(
-    data=df,
-    x="Dependents",
-    hue="Churn"
-)
-
-plt.title("Dependents vs Churn")
-
-plt.savefig("images/dependents_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(8,5))
-
-sns.countplot(
-    data=df,
-    x="Contract",
-    hue="Churn"
-)
-
-plt.title("Contract Type vs Churn")
-
-plt.xticks(rotation=15)
-
-plt.savefig("images/contract_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(8,5))
-
-sns.countplot(
-    data=df,
-    x="InternetService",
-    hue="Churn"
-)
-
-plt.title("Internet Service vs Churn")
-
-plt.xticks(rotation=20)
-
-plt.savefig("images/internet_vs_churn.png")
-
-plt.close()
-
-plt.figure(figsize=(8,5))
-
-sns.histplot(
-    df["MonthlyCharges"],
-    bins=30,
-    kde=True
-)
-
-plt.title("Monthly Charges Distribution")
-
-plt.savefig("images/monthly_charges_distribution.png")
-
-plt.close()
-
-plt.figure(figsize=(8,5))
-
-sns.histplot(
-    df["tenure"],
-    bins=30,
-    kde=True
-)
-
-plt.title("Tenure Distribution")
-
-plt.savefig("images/tenure_distribution.png")
-
-plt.close()
-
-plt.figure(figsize=(8,5))
-
-sns.boxplot(
-    data=df,
-    x="Churn",
-    y="MonthlyCharges"
-)
-
-plt.title("Monthly Charges vs Churn")
-
-plt.savefig("images/monthlycharges_boxplot.png")
-
-plt.close()
-
-# Convert categorical columns to numeric temporarily (for correlation plot only)
-df_corr = df.copy()
-
-from sklearn.preprocessing import LabelEncoder
-
-le = LabelEncoder()
-
-for col in df_corr.columns:
-    if df_corr[col].dtype == "object":
-        df_corr[col] = le.fit_transform(df_corr[col])
-
-plt.figure(figsize=(15,10))
-
-sns.heatmap(
-    df_corr.select_dtypes(include=['number']).corr(),
-    annot=True,
-    cmap="coolwarm"
-)
-
-plt.title("Correlation Heatmap")
-
-plt.savefig("images/correlation_heatmap.png")
-
-plt.close()
-
-print("=" * 60)
-print("BUSINESS INSIGHTS")
-print("=" * 60)
-
-print()
-
-print("1. Customers with Month-to-Month contracts usually have higher churn.")
-print("2. Customers with longer tenure generally have lower churn.")
-print("3. High monthly charges may increase churn risk.")
-print("4. Senior citizens can have different churn behavior.")
-print("5. Internet service type may influence churn.")
-print("\n" + "=" * 60)
-print("PART 2 COMPLETED SUCCESSFULLY")
-print("=" * 60)
 
 # ==========================================================
-# PART 3
-# Feature Encoding, Model Training & Saving
-# (This is what app.py needs: models/churn_model.pkl + models/scaler.pkl)
+# PART 1 — LOAD & CLEAN
 # ==========================================================
 
-import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+def load_and_clean_data(path="data/customer_churn.csv"):
 
-print("\n" + "=" * 60)
-print("PART 3: MODEL TRAINING")
-print("=" * 60)
+    print("=" * 60)
+    print("CUSTOMER CHURN PREDICTION — TRAINING PIPELINE")
+    print("=" * 60)
 
-df_model = df.copy()
+    try:
+        df = pd.read_csv(path)
+        print(f"\nDataset loaded successfully from '{path}'.")
+    except Exception as e:
+        print(f"Dataset loading failed: {e}")
+        raise SystemExit(1)
 
-# Drop identifier column if present - not a predictive feature
-if "customerID" in df_model.columns:
-    df_model = df_model.drop(columns=["customerID"])
+    print(f"Shape: {df.shape[0]} rows, {df.shape[1]} columns")
 
-# ----------------------------------------------------------
-# STEP 1 : Encode categorical columns
-# IMPORTANT: these mappings must exactly match the `maps` dict
-# used in app.py, so predictions made in the app line up with
-# how the model was trained.
-# ----------------------------------------------------------
+    duplicates = df.duplicated().sum()
+    print(f"Duplicate rows found: {duplicates}")
+    df = df.drop_duplicates()
 
-encode_maps = {
+    if "TotalCharges" in df.columns:
+        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+
+    missing_before = df.isnull().sum().sum()
+    df.fillna(df.median(numeric_only=True), inplace=True)
+    print(f"Missing values filled (numeric median): {missing_before} cells")
+
+    os.makedirs("data", exist_ok=True)
+    df.to_csv("data/customer_churn_clean.csv", index=False)
+    print("Clean dataset saved to 'data/customer_churn_clean.csv'")
+    print("PART 1 COMPLETE\n")
+
+    return df
+
+
+# ==========================================================
+# PART 2 — EXPLORATORY DATA ANALYSIS
+# ==========================================================
+
+def run_eda(df):
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from sklearn.preprocessing import LabelEncoder
+
+    print("=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+
+    os.makedirs("images", exist_ok=True)
+    plt.style.use("ggplot")
+    sns.set_theme()
+
+    plots = [
+        ("Churn", None, "Customer Churn Distribution", "churn_distribution.png"),
+        ("gender", "Churn", "Gender vs Churn", "gender_vs_churn.png"),
+        ("SeniorCitizen", "Churn", "Senior Citizen vs Churn", "senior_vs_churn.png"),
+        ("Partner", "Churn", "Partner vs Churn", "partner_vs_churn.png"),
+        ("Dependents", "Churn", "Dependents vs Churn", "dependents_vs_churn.png"),
+        ("Contract", "Churn", "Contract Type vs Churn", "contract_vs_churn.png"),
+        ("InternetService", "Churn", "Internet Service vs Churn", "internet_vs_churn.png"),
+    ]
+
+    for x, hue, title, filename in plots:
+        plt.figure(figsize=(7, 5))
+        if hue:
+            sns.countplot(data=df, x=x, hue=hue)
+        else:
+            sns.countplot(data=df, x=x)
+        plt.title(title)
+        plt.xticks(rotation=15)
+        plt.tight_layout()
+        plt.savefig(f"images/{filename}")
+        plt.close()
+
+    for col, filename, title in [
+        ("MonthlyCharges", "monthly_charges_distribution.png", "Monthly Charges Distribution"),
+        ("tenure", "tenure_distribution.png", "Tenure Distribution"),
+    ]:
+        plt.figure(figsize=(8, 5))
+        sns.histplot(df[col], bins=30, kde=True)
+        plt.title(title)
+        plt.tight_layout()
+        plt.savefig(f"images/{filename}")
+        plt.close()
+
+    plt.figure(figsize=(8, 5))
+    sns.boxplot(data=df, x="Churn", y="MonthlyCharges")
+    plt.title("Monthly Charges vs Churn")
+    plt.tight_layout()
+    plt.savefig("images/monthlycharges_boxplot.png")
+    plt.close()
+
+    df_corr = df.copy()
+    if "customerID" in df_corr.columns:
+        df_corr = df_corr.drop(columns=["customerID"])
+    le = LabelEncoder()
+    for col in df_corr.columns:
+        if not pd.api.types.is_numeric_dtype(df_corr[col]):
+            df_corr[col] = le.fit_transform(df_corr[col].astype(str))
+
+    plt.figure(figsize=(15, 10))
+    sns.heatmap(df_corr.corr(), annot=True, cmap="coolwarm")
+    plt.title("Correlation Heatmap")
+    plt.tight_layout()
+    plt.savefig("images/correlation_heatmap.png")
+    plt.close()
+
+    print(f"Saved {len(plots) + 3} charts to 'images/'")
+    print("PART 2 COMPLETE\n")
+
+
+# ==========================================================
+# PART 3 — ENCODING, MODEL COMPARISON, TRAINING, SAVING
+# ==========================================================
+
+# Single source of truth for categorical encoding.
+# app.py uses the EXACT same mapping (COLUMN_ENCODINGS) so a
+# prediction typed into the app lines up with how the model
+# was trained. If you change these, update app.py too.
+ENCODE_MAPS = {
     "gender": {"Female": 0, "Male": 1},
     "Partner": {"No": 0, "Yes": 1},
     "Dependents": {"No": 0, "Yes": 1},
@@ -448,22 +173,6 @@ encode_maps = {
     "Churn": {"No": 0, "Yes": 1}
 }
 
-for col, mapping in encode_maps.items():
-    if col in df_model.columns:
-        df_model[col] = df_model[col].map(mapping)
-
-# Any values that failed to map (unexpected categories) become NaN - drop them
-before = len(df_model)
-df_model = df_model.dropna()
-after = len(df_model)
-if before != after:
-    print(f"Dropped {before - after} rows with unrecognized category values.")
-
-# ----------------------------------------------------------
-# STEP 2 : Split features / target
-# Feature order matches FEATURE_COLUMNS in app.py exactly.
-# ----------------------------------------------------------
-
 FEATURE_COLUMNS = [
     "gender", "SeniorCitizen", "Partner", "Dependents", "tenure",
     "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity",
@@ -472,64 +181,155 @@ FEATURE_COLUMNS = [
     "MonthlyCharges", "TotalCharges"
 ]
 
-X = df_model[FEATURE_COLUMNS]
-y = df_model["Churn"].astype(int)
 
-# ----------------------------------------------------------
-# STEP 3 : Train / test split
-# ----------------------------------------------------------
+def train_and_save_model(df):
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
-)
+    import joblib
+    from sklearn.model_selection import train_test_split, cross_val_score
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+    from sklearn.metrics import (
+        accuracy_score, precision_score, recall_score,
+        f1_score, confusion_matrix, classification_report
+    )
 
-# ----------------------------------------------------------
-# STEP 4 : Scale features
-# ----------------------------------------------------------
+    print("=" * 60)
+    print("MODEL TRAINING")
+    print("=" * 60)
 
-scaler = StandardScaler()
+    df_model = df.copy()
 
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+    if "customerID" in df_model.columns:
+        df_model = df_model.drop(columns=["customerID"])
 
-# ----------------------------------------------------------
-# STEP 5 : Train model
-# ----------------------------------------------------------
+    for col, mapping in ENCODE_MAPS.items():
+        if col in df_model.columns:
+            df_model[col] = df_model[col].map(mapping)
 
-model = RandomForestClassifier(
-    n_estimators=200,
-    max_depth=10,
-    random_state=42,
-    class_weight="balanced"
-)
+    before = len(df_model)
+    df_model = df_model.dropna()
+    after = len(df_model)
+    if before != after:
+        print(f"Dropped {before - after} rows with unrecognized category values.")
 
-model.fit(X_train_scaled, y_train)
+    X = df_model[FEATURE_COLUMNS]
+    y = df_model["Churn"].astype(int)
 
-# ----------------------------------------------------------
-# STEP 6 : Evaluate
-# ----------------------------------------------------------
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
 
-y_pred = model.predict(X_test_scaled)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-acc = accuracy_score(y_test, y_pred)
+    # ------------------------------------------------------
+    # Compare a few candidate models via cross-validation and
+    # keep the best one, instead of training a single fixed
+    # model blindly.
+    # ------------------------------------------------------
 
-print(f"\nTest Accuracy : {acc * 100:.2f}%")
-print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
-print("Confusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
+    candidates = {
+        "LogisticRegression": LogisticRegression(max_iter=1000, class_weight="balanced"),
+        "RandomForest": RandomForestClassifier(
+            n_estimators=200, max_depth=10, random_state=42, class_weight="balanced"
+        ),
+        "GradientBoosting": GradientBoostingClassifier(
+            n_estimators=200, max_depth=3, random_state=42
+        ),
+    }
 
-# ----------------------------------------------------------
-# STEP 7 : Save model + scaler for app.py
-# ----------------------------------------------------------
+    print("\nComparing candidate models (5-fold cross-validation)...")
 
-os.makedirs("models", exist_ok=True)
+    best_name, best_model, best_score = None, None, -1.0
 
-joblib.dump(model, "models/churn_model.pkl")
-joblib.dump(scaler, "models/scaler.pkl")
+    for name, candidate in candidates.items():
+        scores = cross_val_score(candidate, X_train_scaled, y_train, cv=5, scoring="accuracy")
+        mean_score = scores.mean()
+        print(f"  {name:<20} CV Accuracy: {mean_score:.4f}")
+        if mean_score > best_score:
+            best_name, best_model, best_score = name, candidate, mean_score
 
-print("\nModel and scaler saved to 'models/churn_model.pkl' and 'models/scaler.pkl'")
-print("\nPART 3 COMPLETED SUCCESSFULLY")
+    print(f"\nBest model: {best_name} (CV Accuracy: {best_score:.4f})")
+
+    best_model.fit(X_train_scaled, y_train)
+    y_pred = best_model.predict(X_test_scaled)
+
+    metrics = {
+        "model_name": best_name,
+        "trained_at": datetime.datetime.now().isoformat(timespec="seconds"),
+        "dataset_rows": int(len(df_model)),
+        "train_rows": int(len(X_train)),
+        "test_rows": int(len(X_test)),
+        "cv_accuracy": round(float(best_score), 4),
+        "test_accuracy": round(float(accuracy_score(y_test, y_pred)), 4),
+        "precision": round(float(precision_score(y_test, y_pred, zero_division=0)), 4),
+        "recall": round(float(recall_score(y_test, y_pred, zero_division=0)), 4),
+        "f1_score": round(float(f1_score(y_test, y_pred, zero_division=0)), 4),
+        "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
+    }
+
+    print("\nTest Set Performance:")
+    print(f"  Accuracy  : {metrics['test_accuracy'] * 100:.2f}%")
+    print(f"  Precision : {metrics['precision'] * 100:.2f}%")
+    print(f"  Recall    : {metrics['recall'] * 100:.2f}%")
+    print(f"  F1 Score  : {metrics['f1_score'] * 100:.2f}%")
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred, zero_division=0))
+
+    # ------------------------------------------------------
+    # Feature importance (only available for tree-based models)
+    # ------------------------------------------------------
+
+    if hasattr(best_model, "feature_importances_"):
+        importance_df = pd.DataFrame({
+            "feature": FEATURE_COLUMNS,
+            "importance": best_model.feature_importances_
+        }).sort_values("importance", ascending=False)
+    elif hasattr(best_model, "coef_"):
+        importance_df = pd.DataFrame({
+            "feature": FEATURE_COLUMNS,
+            "importance": np.abs(best_model.coef_[0])
+        }).sort_values("importance", ascending=False)
+    else:
+        importance_df = pd.DataFrame({"feature": FEATURE_COLUMNS, "importance": 0})
+
+    # ------------------------------------------------------
+    # Save everything the app needs
+    # ------------------------------------------------------
+
+    os.makedirs("models", exist_ok=True)
+
+    joblib.dump(best_model, "models/churn_model.pkl")
+    joblib.dump(scaler, "models/scaler.pkl")
+
+    with open("models/metrics.json", "w") as f:
+        json.dump(metrics, f, indent=2)
+
+    importance_df.to_csv("models/feature_importance.csv", index=False)
+
+    print("\nSaved:")
+    print("  models/churn_model.pkl")
+    print("  models/scaler.pkl")
+    print("  models/metrics.json")
+    print("  models/feature_importance.csv")
+    print("\nPART 3 COMPLETE")
+
+
+# ==========================================================
+# ENTRY POINT
+# ==========================================================
+# Guarded so nothing runs if this file is ever imported rather
+# than executed directly. Deployment (streamlit run app.py)
+# never triggers this file at all.
+
+if __name__ == "__main__":
+
+    df = load_and_clean_data()
+    run_eda(df)
+    train_and_save_model(df)
+
+    print("\n" + "=" * 60)
+    print("TRAINING PIPELINE FINISHED — ready to run: streamlit run app.py")
+    print("=" * 60)
