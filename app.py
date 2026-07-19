@@ -851,7 +851,7 @@ if page == "Prediction":
         with left:
 
             gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
-            senior = st.selectbox("Senior Citizen", [0, 1], key="SeniorCitizen")
+            senior = st.selectbox("Senior Citizen", ["Yes", "No"], key="SeniorCitizen")
             partner = st.selectbox("Partner", ["Yes", "No"], key="Partner")
             dependents = st.selectbox("Dependents", ["Yes", "No"], key="Dependents")
             tenure = st.slider("Tenure (Months)", 0, 72, 12, key="tenure")
@@ -927,18 +927,18 @@ if page == "Prediction":
             )
 
             monthly = st.number_input(
-                "Monthly Charges ($)",
+                "Monthly Charges (₹)",
                 min_value=0.0,
                 max_value=200.0,
-                value=70.0,
+                value=00.0,
                 key="MonthlyCharges"
             )
 
             total = st.number_input(
-                "Total Charges ($)",
+                "Total Charges (₹)",
                 min_value=0.0,
                 max_value=10000.0,
-                value=1000.0,
+                value=0.0,
                 key="TotalCharges"
             )
 
@@ -1027,7 +1027,7 @@ if page == "Prediction":
 
             col1.metric("Gender", gender)
             col2.metric("Tenure", f"{tenure} mo")
-            col3.metric("Monthly Charges", f"${monthly}")
+            col3.metric("Monthly Charges", f"₹{monthly}")
 
             col1.metric("Internet", internet)
             col2.metric("Contract", contract)
