@@ -928,7 +928,7 @@ if page == "Prediction":
 
             monthly = st.number_input(
                 "Monthly Charges (₹)",
-                min_value=0.0,
+                min_value=1.0,
                 max_value=499.0,
                 value=10.0,
                 key="MonthlyCharges"
@@ -936,8 +936,8 @@ if page == "Prediction":
 
             total = st.number_input(
                 "Total Charges (₹)",
-                min_value=0.0,
-                max_value=10000.0,
+                min_value=1.0,
+                max_value=1000.0,
                 value=10.0,
                 key="TotalCharges"
             )
