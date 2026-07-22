@@ -403,11 +403,24 @@ div[data-baseweb="select"]:hover{
     border-color:var(--gold-dim) !important;
 }
 
-.stNumberInput input{
+.stNumberInput input,
+[data-testid="stNumberInput"] input,
+[data-testid="stNumberInputField"]{
     background:rgba(255,255,255,0.04) !important;
     color:var(--cream) !important;
     border:1px solid var(--glass-border) !important;
     border-radius:10px !important;
+    -webkit-text-fill-color:var(--cream) !important;
+}
+[data-testid="stNumberInput"] button,
+[data-testid="stNumberInputStepUp"],
+[data-testid="stNumberInputStepDown"]{
+    background:rgba(255,255,255,0.06) !important;
+    color:var(--cream) !important;
+    border:1px solid var(--glass-border) !important;
+}
+[data-testid="stNumberInput"] svg{
+    fill:var(--cream) !important;
 }
 
 .stSlider [data-baseweb="slider"] div[role="slider"]{
@@ -851,7 +864,7 @@ if page == "Prediction":
         with left:
 
             gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
-            senior = st.selectbox("Senior Citizen", ["No", "Yes"], key="SeniorCitizen")
+            senior = st.selectbox("Senior Citizen", ["No","Yes"], key="SeniorCitizen")
             partner = st.selectbox("Partner", ["Yes", "No"], key="Partner")
             dependents = st.selectbox("Dependents", ["Yes", "No"], key="Dependents")
             tenure = st.slider("Tenure (Months)", 0, 72, 12, key="tenure")
@@ -919,7 +932,6 @@ if page == "Prediction":
                 "Payment Method",
                 [
                     "Electronic check",
-                    "Mailed check",
                     "Bank transfer (automatic)",
                     "Credit card (automatic)"
                 ],
