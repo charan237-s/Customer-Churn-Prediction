@@ -864,7 +864,7 @@ if page == "Prediction":
         with left:
 
             gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
-            senior = st.selectbox("Senior Citizen", ["No","Yes"], key="SeniorCitizen")
+            senior = st.selectbox("Senior Citizen", ["NO", "YES"], key="SeniorCitizen")
             partner = st.selectbox("Partner", ["Yes", "No"], key="Partner")
             dependents = st.selectbox("Dependents", ["Yes", "No"], key="Dependents")
             tenure = st.slider("Tenure (Months)", 0, 72, 12, key="tenure")
@@ -932,6 +932,7 @@ if page == "Prediction":
                 "Payment Method",
                 [
                     "Electronic check",
+                    "Mailed check",
                     "Bank transfer (automatic)",
                     "Credit card (automatic)"
                 ],
