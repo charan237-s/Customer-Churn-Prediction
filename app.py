@@ -851,7 +851,7 @@ if page == "Prediction":
         with left:
 
             gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
-            senior = st.selectbox("Senior Citizen", ["Yes", "No"], key="SeniorCitizen")
+            senior = st.selectbox("Senior Citizen", ["No", "Yes"], key="SeniorCitizen")
             partner = st.selectbox("Partner", ["Yes", "No"], key="Partner")
             dependents = st.selectbox("Dependents", ["Yes", "No"], key="Dependents")
             tenure = st.slider("Tenure (Months)", 0, 72, 12, key="tenure")
@@ -928,17 +928,17 @@ if page == "Prediction":
 
             monthly = st.number_input(
                 "Monthly Charges (₹)",
-                min_value=1.0,
-                max_value=499.0,
-                value=10.0,
+                min_value=0.0,
+                max_value=200.0,
+                value=70.0,
                 key="MonthlyCharges"
             )
 
             total = st.number_input(
                 "Total Charges (₹)",
-                min_value=1.0,
-                max_value=1000.0,
-                value=10.0,
+                min_value=0.0,
+                max_value=10000.0,
+                value=1000.0,
                 key="TotalCharges"
             )
 
@@ -974,8 +974,39 @@ if page == "Prediction":
                 "TotalCharges": total
             }])
 
-            encoded, _ = encode_dataframe(row)
-            sample_scaled = scaler.transform(encoded[FEATURE_COLUMNS])
+            encoded, dropped_rows = encode_dataframe(row)
+
+            if encoded.empty:
+                st.error(
+                    "Couldn't process this input — one of the selected values "
+                    "didn't match an expected category. Try adjusting your "
+                    "selections and predicting again."
+                )
+                st.stop()
+
+            expected_n = getattr(scaler, "n_features_in_", len(FEATURE_COLUMNS))
+            if expected_n != len(FEATURE_COLUMNS):
+                st.error(
+                    f"Model/scaler mismatch: the deployed scaler expects "
+                    f"{expected_n} feature(s), but the app is sending "
+                    f"{len(FEATURE_COLUMNS)}. The 'models/' files in this "
+                    f"deployment are likely out of date — retrain by running "
+                    f"`python main.py` locally and redeploy the updated "
+                    f"'models/churn_model.pkl' and 'models/scaler.pkl'."
+                )
+                st.stop()
+
+            try:
+                sample_scaled = scaler.transform(encoded[FEATURE_COLUMNS])
+            except ValueError as e:
+                st.error(
+                    "The model couldn't process this input. This usually means "
+                    "the deployed 'models/' files don't match this version of "
+                    "the app. Retrain with `python main.py` and redeploy the "
+                    "updated model files."
+                )
+                st.caption(f"Technical detail: {e}")
+                st.stop()
 
             prediction = model.predict(sample_scaled)[0]
 
@@ -1027,7 +1058,7 @@ if page == "Prediction":
 
             col1.metric("Gender", gender)
             col2.metric("Tenure", f"{tenure} mo")
-            col3.metric("Monthly Charges", f"₹{monthly}")
+            col3.metric("Monthly Charges", f"${monthly}")
 
             col1.metric("Internet", internet)
             col2.metric("Contract", contract)
@@ -1106,7 +1137,18 @@ if page == "Prediction":
                     if encoded.empty:
                         st.warning("No valid rows found after validation — check category spellings match the expected values.")
                     else:
-                        scaled = scaler.transform(encoded[FEATURE_COLUMNS])
+                        try:
+                            scaled = scaler.transform(encoded[FEATURE_COLUMNS])
+                        except ValueError as e:
+                            st.error(
+                                "The model couldn't process this file. This usually "
+                                "means the deployed 'models/' files don't match this "
+                                "version of the app. Retrain with `python main.py` "
+                                "and redeploy the updated model files."
+                            )
+                            st.caption(f"Technical detail: {e}")
+                            st.stop()
+
                         preds = model.predict(scaled)
 
                         probs = None
