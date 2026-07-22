@@ -734,6 +734,19 @@ def encode_dataframe(df):
     return out, dropped
 
 
+def find_bad_fields(df):
+    """Diagnostic: returns a list of (column, original_value) pairs where the
+    value didn't match any known category. Used to give a precise error
+    message instead of a generic 'something failed' message."""
+    bad = []
+    for col, mapping in COLUMN_ENCODINGS.items():
+        if col in df.columns:
+            for original_value in df[col]:
+                if original_value not in mapping:
+                    bad.append((col, original_value))
+    return bad
+
+
 # ==========================================================
 # SIDEBAR
 # ==========================================================
@@ -864,7 +877,7 @@ if page == "Prediction":
         with left:
 
             gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
-            senior = st.selectbox("Senior Citizen", ["NO", "YES"], key="SeniorCitizen")
+            senior = st.selectbox("Senior Citizen", [0, 1], key="SeniorCitizen")
             partner = st.selectbox("Partner", ["Yes", "No"], key="Partner")
             dependents = st.selectbox("Dependents", ["Yes", "No"], key="Dependents")
             tenure = st.slider("Tenure (Months)", 0, 72, 12, key="tenure")
@@ -940,7 +953,7 @@ if page == "Prediction":
             )
 
             monthly = st.number_input(
-                "Monthly Charges (₹)",
+                "Monthly Charges ($)",
                 min_value=0.0,
                 max_value=200.0,
                 value=70.0,
@@ -948,7 +961,7 @@ if page == "Prediction":
             )
 
             total = st.number_input(
-                "Total Charges (₹)",
+                "Total Charges ($)",
                 min_value=0.0,
                 max_value=10000.0,
                 value=1000.0,
@@ -990,11 +1003,21 @@ if page == "Prediction":
             encoded, dropped_rows = encode_dataframe(row)
 
             if encoded.empty:
-                st.error(
-                    "Couldn't process this input — one of the selected values "
-                    "didn't match an expected category. Try adjusting your "
-                    "selections and predicting again."
-                )
+                bad_fields = find_bad_fields(row)
+                if bad_fields:
+                    details = "; ".join(f"**{c}** = '{v}'" for c, v in bad_fields)
+                    st.error(
+                        f"Couldn't process this input — the following field(s) "
+                        f"have an unrecognized value: {details}. Please reselect "
+                        f"them and try again."
+                    )
+                else:
+                    st.error(
+                        "Couldn't process this input — one of the numeric fields "
+                        "(Senior Citizen, Tenure, Monthly Charges, or Total "
+                        "Charges) may be blank or invalid. Please check your "
+                        "entries and try again."
+                    )
                 st.stop()
 
             expected_n = getattr(scaler, "n_features_in_", len(FEATURE_COLUMNS))
